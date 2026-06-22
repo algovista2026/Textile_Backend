@@ -32,6 +32,7 @@ import "./models/Warehouse.js";
 import "./models/WarehouseStock.js";
 import "./models/WarehouseTransfer.js";
 import "./models/RecipeMaster.js";
+import "./models/Vendor.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import sheetRoutes from "./routes/sheetRoutes.js";
@@ -47,6 +48,7 @@ import {
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import advancedProductionRoutes from "./routes/advancedProductionRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
+import vendorRoutes from "./routes/vendorRoutes.js";
 import { protect } from "./middlewares/authMiddleware.js";
 
 dotenv.config();
@@ -68,6 +70,7 @@ app.use("/api/production-tracking", productionTrackingRoutes);
 app.use("/api/inventory-advanced", inventoryRoutes);
 app.use("/api/production-advanced", advancedProductionRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/vendors", vendorRoutes);
 
 // Generic Route for Phase 2 dynamic modules
 app.get("/api/generic/:modelName", protect, getGenericData);

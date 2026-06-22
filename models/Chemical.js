@@ -13,7 +13,7 @@ const chemicalSchema = new mongoose.Schema(
     currentStock: { type: Number, default: 0 },
     reorderLevel: { type: Number, default: 0 },
     supplierName: { type: String },
-    supplierContact: { type: String },
+    remarks: { type: String },
     status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
   },
   { timestamps: true },
