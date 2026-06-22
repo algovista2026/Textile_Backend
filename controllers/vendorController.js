@@ -1,4 +1,5 @@
 import Vendor from '../models/Vendor.js';
+import { createAlert } from './alertController.js';
 
 export const getVendors = async (req, res) => {
   try {
@@ -14,6 +15,7 @@ export const createVendor = async (req, res) => {
     const vendorData = { ...req.body };
     vendorData.history = [{ action: 'Created', details: 'Vendor created successfully' }];
     const vendor = await Vendor.create(vendorData);
+    await createAlert('Vendor Created', `Vendor ${vendor.vendorName} has been created.`, 'User', 'success', req.user._id);
     res.status(201).json(vendor);
   } catch (error) {
     res.status(500).json({ message: error.message });

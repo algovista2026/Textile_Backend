@@ -2,6 +2,7 @@ import Chemical from "../models/Chemical.js";
 import Warehouse from "../models/Warehouse.js";
 import WarehouseStock from "../models/WarehouseStock.js";
 import WarehouseTransfer from "../models/WarehouseTransfer.js";
+import { createAlert } from "./alertController.js";
 
 export const getMaterialKPIs = async (req, res) => {
   try {
@@ -241,6 +242,12 @@ export const transferStock = async (req, res) => {
       remarks,
     });
     await transfer.save();
+    
+    const matInfo = await Chemical.findById(material);
+    const fromWhInfo = await Warehouse.findById(fromWarehouse);
+    const toWhInfo = await Warehouse.findById(toWarehouse);
+
+    await createAlert('Stock Transferred', `${quantity} ${matInfo?.unit || ''} of ${matInfo?.chemicalName || 'material'} transferred from ${fromWhInfo?.warehouseName || 'Source'} to ${toWhInfo?.warehouseName || 'Destination'}.`, 'Transfer', 'info', req.user ? req.user._id : null);
 
     res.json({ success: true, message: "Stock transferred successfully" });
   } catch (error) {

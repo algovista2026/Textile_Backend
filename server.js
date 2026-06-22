@@ -49,6 +49,7 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 import advancedProductionRoutes from "./routes/advancedProductionRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import vendorRoutes from "./routes/vendorRoutes.js";
+import alertRoutes from "./routes/alertRoutes.js";
 import { protect } from "./middlewares/authMiddleware.js";
 
 dotenv.config();
@@ -71,6 +72,7 @@ app.use("/api/inventory-advanced", inventoryRoutes);
 app.use("/api/production-advanced", advancedProductionRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/vendors", vendorRoutes);
+app.use("/api/alerts", alertRoutes);
 
 // Generic Route for Phase 2 dynamic modules
 app.get("/api/generic/:modelName", protect, getGenericData);

@@ -2,6 +2,7 @@ import ProductionOrder from "../models/ProductionOrder.js";
 import ProductionDesign from "../models/ProductionDesign.js";
 import Machine from "../models/Machine.js";
 import MachineHistory from "../models/MachineHistory.js";
+import { createAlert } from "./alertController.js";
 
 export const getDashboardData = async (req, res) => {
   try {
@@ -65,6 +66,7 @@ export const createOrder = async (req, res) => {
       selvedge,
       targetDeliveryDate,
     });
+    await createAlert('Order Created', `Production Order ${orderNo} has been created.`, 'Process', 'info', req.user ? req.user._id : null);
     res.status(201).json(order);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -253,7 +255,8 @@ export const updateDesign = async (req, res) => {
     }
 
     // Auto-update overall Order Status based on all its designs
-    if (req.body.processStatus) {
+    if (req.body.processStatus && oldDesign.processStatus !== req.body.processStatus) {
+      await createAlert('Process Status Updated', `Design process status changed to ${req.body.processStatus}.`, 'Process', 'info', req.user ? req.user._id : null);
       const allDesigns = await ProductionDesign.find({
         order: updatedDesign.order,
       });
@@ -397,6 +400,7 @@ export const createMachine = async (req, res) => {
       newMachineData.machineId = `MCH-${Date.now()}`;
     }
     const machine = await Machine.create(newMachineData);
+    await createAlert('Machine Created', `Machine ${machine.name || machine.machineId} has been created.`, 'Process', 'success', req.user ? req.user._id : null);
     res.status(201).json(machine);
   } catch (error) {
     res.status(400).json({ message: error.message });

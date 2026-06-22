@@ -7,6 +7,7 @@ import {
   appendToGoogleSheet,
   updateInGoogleSheet,
 } from "../services/googleSheetService.js";
+import { createAlert } from "./alertController.js";
 
 export const getGenericData = async (req, res) => {
   try {
@@ -107,6 +108,14 @@ export const createGenericData = async (req, res) => {
     } catch (sheetErr) {
       console.error("Failed to append to Google Sheet:", sheetErr);
     }
+    
+    // Add Alert
+    let alertType = 'Inventory';
+    if(modelName === 'Warehouse') alertType = 'Warehouse';
+    else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
+    else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
+    
+    await createAlert(`${modelName} Added`, `A new ${modelName} entry was created.`, alertType, 'success', req.user ? req.user._id : null);
 
     res.status(201).json({ success: true, data: newData });
   } catch (error) {
@@ -159,6 +168,12 @@ export const updateGenericData = async (req, res) => {
       console.error("Failed to update Google Sheet:", sheetErr);
     }
 
+    let alertType = 'Inventory';
+    if(modelName === 'Warehouse') alertType = 'Warehouse';
+    else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
+    else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
+    await createAlert(`${modelName} Updated`, `A ${modelName} entry was updated.`, alertType, 'info', req.user ? req.user._id : null);
+
     res.json({ success: true, data: updatedData });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -179,6 +194,12 @@ export const deleteGenericData = async (req, res) => {
     if (!deletedData) {
       return res.status(404).json({ message: "Document not found" });
     }
+
+    let alertType = 'Inventory';
+    if(modelName === 'Warehouse') alertType = 'Warehouse';
+    else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
+    else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
+    await createAlert(`${modelName} Deleted`, `A ${modelName} entry was deleted.`, alertType, 'warning', req.user ? req.user._id : null);
 
     res.json({
       success: true,

@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { createAlert } from './alertController.js';
 
 export const getUsers = async (req, res) => {
   try {
@@ -26,6 +27,7 @@ export const createUser = async (req, res) => {
     });
 
     if (user) {
+      await createAlert('User Created', `User account ${username} has been created.`, 'User', 'success', req.user ? req.user._id : null);
       res.status(201).json({
         _id: user._id,
         username: user.username,
