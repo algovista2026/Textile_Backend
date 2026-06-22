@@ -114,8 +114,41 @@ export const createGenericData = async (req, res) => {
     if(modelName === 'Warehouse') alertType = 'Warehouse';
     else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
     else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
-    
-    await createAlert(`${modelName} Added`, `A new ${modelName} entry was created.`, alertType, 'success', req.user ? req.user._id : null);
+
+    let alertTitle = `${modelName} Added`;
+    let alertDesc = `A new ${modelName} entry was created.`;
+
+    if (modelName === 'WarehouseStock') {
+       const warehouse = await mongoose.models.Warehouse.findById(newData.warehouse);
+       const material = await mongoose.models.Chemical.findById(newData.material);
+       const materialName = material ? material.chemicalName : 'Unknown Material';
+       const warehouseName = warehouse ? warehouse.warehouseName : 'Unknown Warehouse';
+       
+       alertTitle = `${materialName} Stock Added`;
+       alertDesc = `Stock for ${materialName} was added in ${warehouseName}.`;
+       alertType = 'Warehouse';
+    } else if (modelName === 'Chemical') {
+       alertTitle = `${newData.chemicalName || 'Material'} Added`;
+       alertDesc = `${newData.chemicalName || 'A new material'} was added to inventory.`;
+       
+       if (newData.currentStock === 0) {
+          await createAlert(`${newData.chemicalName} Out of Stock`, `${newData.chemicalName} is currently out of stock!`, 'Inventory', 'error', req.user ? req.user._id : null);
+       } else if (newData.currentStock <= newData.reorderLevel) {
+          await createAlert(`${newData.chemicalName} Low Stock`, `${newData.chemicalName} is running low (Current: ${newData.currentStock} ${newData.unit}).`, 'Inventory', 'warning', req.user ? req.user._id : null);
+       }
+
+    } else if (modelName === 'ChemicalPurchase') {
+       alertTitle = `Purchase Entry Added`;
+       alertDesc = `A new purchase entry for ${newData.chemicalName || 'material'} was recorded.`;
+    } else if (modelName === 'ChemicalConsumption') {
+       alertTitle = `Consumption Recorded`;
+       alertDesc = `Consumption of ${newData.chemicalName || 'material'} was recorded.`;
+    } else if (modelName === 'Warehouse') {
+       alertTitle = `${newData.warehouseName || 'Warehouse'} Added`;
+       alertDesc = `New warehouse ${newData.warehouseName || ''} was created.`;
+    }
+
+    await createAlert(alertTitle, alertDesc, alertType, 'success', req.user ? req.user._id : null);
 
     res.status(201).json({ success: true, data: newData });
   } catch (error) {
@@ -172,7 +205,34 @@ export const updateGenericData = async (req, res) => {
     if(modelName === 'Warehouse') alertType = 'Warehouse';
     else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
     else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
-    await createAlert(`${modelName} Updated`, `A ${modelName} entry was updated.`, alertType, 'info', req.user ? req.user._id : null);
+
+    let alertTitle = `${modelName} Updated`;
+    let alertDesc = `A ${modelName} entry was updated.`;
+
+    if (modelName === 'WarehouseStock') {
+       const warehouse = await mongoose.models.Warehouse.findById(updatedData.warehouse);
+       const material = await mongoose.models.Chemical.findById(updatedData.material);
+       const materialName = material ? material.chemicalName : 'Unknown Material';
+       const warehouseName = warehouse ? warehouse.warehouseName : 'Unknown Warehouse';
+       
+       alertTitle = `${materialName} Stock Updated`;
+       alertDesc = `Stock for ${materialName} was updated in ${warehouseName}.`;
+       alertType = 'Warehouse';
+    } else if (modelName === 'Chemical') {
+       alertTitle = `${updatedData.chemicalName || 'Material'} Updated`;
+       alertDesc = `${updatedData.chemicalName || 'Material'} details were updated.`;
+
+       if (updatedData.currentStock === 0) {
+          await createAlert(`${updatedData.chemicalName} Out of Stock`, `${updatedData.chemicalName} is currently out of stock!`, 'Inventory', 'error', req.user ? req.user._id : null);
+       } else if (updatedData.currentStock <= updatedData.reorderLevel) {
+          await createAlert(`${updatedData.chemicalName} Low Stock`, `${updatedData.chemicalName} is running low (Current: ${updatedData.currentStock} ${updatedData.unit}).`, 'Inventory', 'warning', req.user ? req.user._id : null);
+       }
+    } else if (modelName === 'Warehouse') {
+       alertTitle = `${updatedData.warehouseName || 'Warehouse'} Updated`;
+       alertDesc = `Warehouse ${updatedData.warehouseName || ''} details were updated.`;
+    }
+
+    await createAlert(alertTitle, alertDesc, alertType, 'info', req.user ? req.user._id : null);
 
     res.json({ success: true, data: updatedData });
   } catch (error) {
@@ -199,7 +259,28 @@ export const deleteGenericData = async (req, res) => {
     if(modelName === 'Warehouse') alertType = 'Warehouse';
     else if(modelName === 'ChemicalPurchase') alertType = 'Purchase';
     else if(modelName === 'ChemicalConsumption') alertType = 'Consumption';
-    await createAlert(`${modelName} Deleted`, `A ${modelName} entry was deleted.`, alertType, 'warning', req.user ? req.user._id : null);
+
+    let alertTitle = `${modelName} Deleted`;
+    let alertDesc = `A ${modelName} entry was deleted.`;
+
+    if (modelName === 'WarehouseStock') {
+       const warehouse = await mongoose.models.Warehouse.findById(deletedData.warehouse);
+       const material = await mongoose.models.Chemical.findById(deletedData.material);
+       const materialName = material ? material.chemicalName : 'Unknown Material';
+       const warehouseName = warehouse ? warehouse.warehouseName : 'Unknown Warehouse';
+       
+       alertTitle = `${materialName} Stock Deleted`;
+       alertDesc = `Stock entry for ${materialName} in ${warehouseName} was removed.`;
+       alertType = 'Warehouse';
+    } else if (modelName === 'Chemical') {
+       alertTitle = `${deletedData.chemicalName || 'Material'} Deleted`;
+       alertDesc = `${deletedData.chemicalName || 'Material'} was removed from inventory.`;
+    } else if (modelName === 'Warehouse') {
+       alertTitle = `${deletedData.warehouseName || 'Warehouse'} Deleted`;
+       alertDesc = `Warehouse ${deletedData.warehouseName || ''} was removed.`;
+    }
+
+    await createAlert(alertTitle, alertDesc, alertType, 'warning', req.user ? req.user._id : null);
 
     res.json({
       success: true,

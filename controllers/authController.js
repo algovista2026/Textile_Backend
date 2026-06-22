@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { createAlert } from './alertController.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
@@ -17,6 +18,8 @@ export const authUser = async (req, res) => {
       if (!user.isActive) {
         return res.status(401).json({ message: 'User account is deactivated' });
       }
+
+      await createAlert('User Login', `${user.username} logged into the system.`, 'User', 'info', user._id);
 
       res.json({
         _id: user._id,
