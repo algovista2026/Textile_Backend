@@ -8,6 +8,9 @@ const chemicalPurchaseSchema = new mongoose.Schema(
     vendor: { type: String },
     invoiceNumber: { type: String },
     warehouseName: { type: String },
+    warehouseId: { type: String },
+    status: { type: String, enum: ['Pending', 'Received'], default: 'Pending' },
+    receivedAt: { type: Date },
   },
   { timestamps: true }
 );
