@@ -14,5 +14,5 @@ const clearMachines = async () => {
     process.exit(1);
   }
 };
-
+ 
 clearMachines(); 
